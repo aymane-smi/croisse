@@ -1,0 +1,14 @@
+<h1 mat-dialog-title>Associate Member</h1>
+<div mat-dialog-content>
+  <form class="flex flex-col justify-start items-center" [formGroup]="form" (ngSubmit)="onSubmit()">
+    <mat-select formControlName="memberNum">
+      <mat-option *ngFor="let member of members" value="member.id">
+        {{member.familyName}} {{member.name}}
+      </mat-option>
+    </mat-select>
+    <div mat-dialog-actions>
+      <button mat-raised-button mat-dialog-close>close</button>
+      <button mat-raised-button cdkFocusInitial color="primary">Create</button>
+    </div>
+  </form>
+</div>

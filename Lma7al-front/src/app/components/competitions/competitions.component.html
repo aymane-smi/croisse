@@ -1,0 +1,34 @@
+<div class="w-full">
+  <button mat-button color="primary" [disabled]="Previous" (click)="handlePrevious()">Previous</button>
+  <button mat-button color="primary" [disabled]="Next" (click)="handleNext()">Next</button>
+</div>
+<table mat-table class="mat-elevation-z8" [dataSource]="competitions">
+  <ng-container matColumnDef="Code">
+    <th mat-header-cell *matHeaderCellDef> Code. </th>
+    <td mat-cell *matCellDef="let element">
+      <a routerLink="/competition/{{element.code}}" mat-raised-button color="primary">{{element.code}}</a>
+    </td>
+  </ng-container>
+  <ng-container matColumnDef="date">
+    <th mat-header-cell *matHeaderCellDef> Date. </th>
+    <td mat-cell *matCellDef="let element"> {{element.date}} </td>
+  </ng-container>
+  <ng-container matColumnDef="start">
+    <th mat-header-cell *matHeaderCellDef> Start Time. </th>
+    <td mat-cell *matCellDef="let element"> {{element.startTime | date:"medium"}} </td>
+  </ng-container>
+  <ng-container matColumnDef="end">
+    <th mat-header-cell *matHeaderCellDef> End Time. </th>
+    <td mat-cell *matCellDef="let element"> {{element.endTime | date:"medium"}} </td>
+  </ng-container>
+  <ng-container matColumnDef="number">
+    <th mat-header-cell *matHeaderCellDef> Number of participants. </th>
+    <td mat-cell *matCellDef="let element"> {{element.numberOfParticipants}} </td>
+  </ng-container>
+  <ng-container matColumnDef="amount">
+    <th mat-header-cell *matHeaderCellDef> Amount. </th>
+    <td mat-cell *matCellDef="let element"> {{element.amount}} </td>
+  </ng-container>
+  <tr mat-header-row *matHeaderRowDef="columns"></tr>
+  <tr mat-row *matRowDef="let row; columns: columns;"></tr>
+</table>
