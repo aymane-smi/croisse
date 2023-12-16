@@ -1,6 +1,7 @@
 import { Component } from '@angular/core';
 import { MatBottomSheet } from '@angular/material/bottom-sheet';
 import { MatDialog } from '@angular/material/dialog';
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { ActivatedRoute } from '@angular/router';
 import { Competition } from 'src/app/model/interfaces/competition.model';
 import { Hunting } from 'src/app/model/interfaces/hunting';
@@ -32,17 +33,18 @@ export class CompetitionComponent {
     private huntingService: HuntingService,
     private router: ActivatedRoute,
     private _bottomSheet: MatBottomSheet,
-    private rankingService:RankingService){}
+    private rankingService:RankingService,
+    private _snackBar: MatSnackBar){}
 
   ngOnInit(): void{
     this.code = this.router.snapshot.paramMap.get("code")||'';
     this.competitionService.findCompetition(this.code).subscribe(competition => {
       this.competition = <Competition|undefined>competition;
       this.huntings = competition?.huntings!;
-    });
+    }, err => this._snackBar.open(err));
     this.memberService.getMembers().subscribe(response => {
       this.members = response;
-    });
+    }, err => this._snackBar.open(err));
   }
 
   toggleCreate(){
@@ -54,7 +56,12 @@ export class CompetitionComponent {
   }
 
   toogleAssociate(){
-    let dialogRef = this.dialog.open(MemberAssociateDComponent, {width: "300px", enterAnimationDuration:"400ms", exitAnimationDuration: "400ms", autoFocus: false});
+    let dialogRef = this.dialog.open(MemberAssociateDComponent, {width: "300px", enterAnimationDuration:"400ms", exitAnimationDuration: "400ms", autoFocus: false, data: this.code});
+    dialogRef.afterClosed().subscribe(data=>{
+      let index = this.members.findIndex(member => member.num === data.num);
+      if(index !== -1)
+        this.huntings.push(data);
+    });
   }
 
   toggleHunt(){
@@ -79,6 +86,6 @@ export class CompetitionComponent {
   }
 
   generateRanking(): void{
-    this.rankingService.getCompetitionRankings(this.code).subscribe(response => console.log(response));
+    this.rankingService.getCompetitionRankings(this.code).subscribe(response => console.log(response), err => this._snackBar.open(err));
   }
 }

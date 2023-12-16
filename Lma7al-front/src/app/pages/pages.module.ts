@@ -5,6 +5,7 @@ import { MatTableModule } from "@angular/material/table";
 import { MatButtonModule } from "@angular/material/button";
 import { MatToolbarModule } from '@angular/material/toolbar';
 import {MatTabsModule} from "@angular/material/tabs";
+import {MatSnackBarModule} from "@angular/material/snack-bar";
 import { CompetitionDComponent } from '../shared/dialog/competition-d/competition-d.component';
 import { RouterModule } from '@angular/router';
 import { CompetitionComponent } from './competition/competition.component';
@@ -27,7 +28,8 @@ import { CompetitionsComponent as CompetitionsComponentCom } from "../components
         CompetitionDComponent,
         RouterModule,
         MatBottomSheetModule,
-        CompetitionsComponentCom
+        CompetitionsComponentCom,
+        MatSnackBarModule
     ]
 })
 export class PagesModule { }

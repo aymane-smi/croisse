@@ -160,10 +160,4 @@ export class CompetitionsComponent {
     }
   }
 
-  alae(){
-    this.competitions.filter((competition)=>{
-      competition.date === new Date();
-    });
-  }
-
 }
