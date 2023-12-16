@@ -11,14 +11,16 @@ import { HuntingService } from 'src/app/services/hunting.service';
 import { MemberService } from 'src/app/services/member.service';
 import { RankingService } from 'src/app/services/ranking.service';
 import { HuntDComponent } from 'src/app/shared/dialog/hunt-d/hunt-d.component';
+import { HunteditComponent } from 'src/app/shared/dialog/huntedit/huntedit.component';
 import { MemberAssociateDComponent } from 'src/app/shared/dialog/member-associate-d/member-associate-d.component';
 import { MemberDComponent } from 'src/app/shared/dialog/member-d/member-d.component';
 import { CompetitionBComponent } from 'src/app/shared/sheet/competition-b/competition-b.component';
+import party from "party-js";
+import { RankingTComponent } from 'src/app/shared/sheet/ranking-t/ranking-t.component';
 
 @Component({
   selector: 'app-competition',
   templateUrl: './competition.component.html',
-  styleUrls: ['./competition.component.css']
 })
 export class CompetitionComponent {
   public image = "https://maghreb.simplonline.co/_next/image?url=https%3A%2F%2Fsimplonline-v3-prod.s3.eu-west-3.amazonaws.com%2Fmedia%2Fimage%2Fjpg%2Fchasse-sous-marine-sous-eau-950002-169315-657215df5fd58614044589.jpg&w=1280&q=75";
@@ -27,6 +29,7 @@ export class CompetitionComponent {
   columns = ["id", "numberOfFish", "fish", "member", "actions"];
   huntings: Hunting[] = [];
   code:String = '';
+  isDone:boolean = false;
   constructor(public dialog: MatDialog,
     private competitionService: CompetitionService,
     private memberService: MemberService,
@@ -41,6 +44,9 @@ export class CompetitionComponent {
     this.competitionService.findCompetition(this.code).subscribe(competition => {
       this.competition = <Competition|undefined>competition;
       this.huntings = competition?.huntings!;
+      let end:string = this.competition?.endTime as unknown as string;
+      if(new Date(end) >= new Date())
+        this.isDone = true;
     }, err => this._snackBar.open(err));
     this.memberService.getMembers().subscribe(response => {
       this.members = response;
@@ -85,7 +91,41 @@ export class CompetitionComponent {
     });
   }
 
-  generateRanking(): void{
-    this.rankingService.getCompetitionRankings(this.code).subscribe(response => console.log(response), err => this._snackBar.open(err));
+  generateRanking(event:any): void{
+    this.rankingService.getCompetitionRankings(this.code).subscribe(response => {
+      if(response.length === 0)
+        this._snackBar.open("the competition doesn't contain any member or hunt");
+      else{
+        if(response[0].rank != null){
+          this.rankingService.getCompetitionRankings(this.code).subscribe(response=>{
+            party.confetti(event);
+            let sheet = this._bottomSheet.open(RankingTComponent, {data: response});
+          });
+        }else{
+          this.rankingService.generateCompetitionRankings(this.code).subscribe(response=>{
+            party.confetti(event);
+            this._bottomSheet.open(RankingTComponent, {data: response});
+          });
+        }
+      }
+    }, err => this._snackBar.open(err));
+  }
+
+  deleteHunt(id:number): void{
+    this.huntingService.deleteHunting(id).subscribe(response => {
+      this._snackBar.open("hunt deleted");
+      this.huntings = this.huntings.filter(hunt => hunt.id !== id);
+    }, err => this._snackBar.open(err));
+  }
+
+  editHunt(id:number, numberOfFish: number): void{
+    let dialogRef = this.dialog.open(HunteditComponent, {width: "300px", enterAnimationDuration: '400ms', exitAnimationDuration: '400ms', autoFocus: false	, data:{id, number: numberOfFish}});
+    dialogRef.afterClosed().subscribe(data => {
+      this.huntings = this.huntings.map(hunt => {
+        if(hunt.id === data.id)
+          hunt.numberOfFish = data.numberOfFish
+        return hunt;
+      });
+    });
   }
 }

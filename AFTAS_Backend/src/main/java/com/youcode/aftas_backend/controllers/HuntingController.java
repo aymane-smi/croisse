@@ -54,7 +54,7 @@ public class HuntingController {
 
     @PatchMapping("/{id}")
     public ResponseEntity<SingleHuntDto> editNumberOfFish(@PathVariable int id, @RequestBody @Valid HuntFishNbrDto HuntNbrDTO){
-        return ResponseEntity.status(HttpStatus.FOUND).body(
+        return ResponseEntity.status(HttpStatus.OK).body(
                 huntingService.updateNumberOfFish(id, HuntNbrDTO.getNumberOfFish())
         );
     }

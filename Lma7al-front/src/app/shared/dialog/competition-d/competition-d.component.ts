@@ -4,6 +4,7 @@ import { MatButtonModule } from '@angular/material/button';
 import {MAT_DIALOG_DATA, MatDialogModule, MatDialogRef} from "@angular/material/dialog";
 import {MatFormFieldModule} from "@angular/material/form-field";
 import {MatInputModule} from "@angular/material/input";
+import { MatSnackBar } from '@angular/material/snack-bar';
 import { Competition } from 'src/app/model/interfaces/competition.model';
 import { CompetitionService } from 'src/app/services/competition.service';
 
@@ -19,7 +20,8 @@ export class CompetitionDComponent {
 
   constructor(public dialogRef: MatDialogRef<CompetitionDComponent>,
     private competitionService: CompetitionService,
-    @Inject(MAT_DIALOG_DATA) public data: Competition){}
+    @Inject(MAT_DIALOG_DATA) public data: Competition,
+    private _snackBar: MatSnackBar){}
   formDialog = new FormGroup({
     code: new FormControl(),
     date: new FormControl(),
@@ -50,7 +52,7 @@ export class CompetitionDComponent {
 
       this.competitionService.addCompetition(this.formDialog.getRawValue()).subscribe(response => {
         this.dialogRef.close(response);
-      });
+      }, err => this._snackBar.open(err));
     }
   }
 

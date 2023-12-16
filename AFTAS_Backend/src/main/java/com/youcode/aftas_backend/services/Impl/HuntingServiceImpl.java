@@ -92,9 +92,7 @@ public class HuntingServiceImpl implements HuntingService {
         if(!huntingRepository.existsById(id) || valueToAdd < 1)
             throw new ResourceNotFoundException("invalid hunt id or fish number is less than 1");
         Hunting huntingInstance = huntingRepository.findById(id).get();
-        huntingInstance.setNumberOfFish(
-                huntingInstance.getNumberOfFish()+valueToAdd
-        );
+        huntingInstance.setNumberOfFish(valueToAdd);
         return modelMapper.map(huntingRepository.save(huntingInstance), SingleHuntDto.class);
     }
 

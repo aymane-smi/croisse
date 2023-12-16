@@ -30,7 +30,7 @@ public class RankingController extends Controller<RankingDto, CompetitionMember>
 
     private RankingService rankingService;
 
-    @GetMapping("/competition/{code}")
+    @GetMapping("/competition/{code}/generate")
     public ResponseEntity<List<RankingDto>> setCompetitionRankings(@PathVariable("code") final String competitionCode) {
         return new ResponseEntity<>(
                 rankingService.SetUpCompetitionRankings(competitionCode),
@@ -38,8 +38,8 @@ public class RankingController extends Controller<RankingDto, CompetitionMember>
         );
     }
 
-    @GetMapping("/competition")
-    public ResponseEntity<List<RankingDto>> getCompetitionRankings(@RequestParam final String code) {
+    @GetMapping("/competition/{code}")
+    public ResponseEntity<List<RankingDto>> getCompetitionRankings(@PathVariable("code") final String code) {
         return new ResponseEntity<>(
                 rankingService.getCompetitionRankings(code),
                 HttpStatus.OK

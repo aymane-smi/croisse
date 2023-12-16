@@ -16,10 +16,6 @@ public class HuntingDto {
     @NotNull(message = "the number of fish is required")
     private int numberOfFish;
 
-    @Min(value=1, message = "not valid weight")
-    @NotNull(message = "fish weight is required")
-    private double weight;
-
     @NotBlank(message = "fish name is required")
     private String fish_name;
 

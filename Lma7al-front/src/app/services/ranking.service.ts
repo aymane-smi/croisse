@@ -31,6 +31,12 @@ export class RankingService {
           .pipe(catchError((error) => this.configService.handleError(error)));
       }
 
+      generateCompetitionRankings(competitionCode: String): Observable<Ranking[]> {
+        return this.http
+          .get<Ranking[]>(this.baseUrl + "/competition/" + competitionCode+'/generate', this.httpOptions)
+          .pipe(catchError((error) => this.configService.handleError(error)));
+      }
+
       deleteRanking(identifier: CompetitionMember): Observable<{message: String, deletedElementIdentifier: CompetitionMember}> {
         return this.http
           .delete<{message: String, deletedElementIdentifier: CompetitionMember}>(this.baseUrl + "/competition/" + identifier.competitionCode + "/member/" + identifier.memberNum , this.httpOptions)

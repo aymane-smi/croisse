@@ -10,6 +10,7 @@ import {MatSelectModule} from "@angular/material/select";
 import { IdentityDocumentType } from 'src/app/model/enums/identityDocumentType.enum';
 import { CommonModule, KeyValuePipe } from '@angular/common';
 import { RankingService } from 'src/app/services/ranking.service';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-member-d',
@@ -22,7 +23,8 @@ export class MemberDComponent {
   constructor(public dialogRef: MatDialogRef<MemberDComponent>,
     private memberService: MemberService,
     private rankingService:RankingService,
-    @Inject(MAT_DIALOG_DATA) public data: any){}
+    @Inject(MAT_DIALOG_DATA) public data: any,
+    private _snackBar: MatSnackBar){}
 
   form = new FormGroup({
     name: new FormControl(),
@@ -44,7 +46,7 @@ export class MemberDComponent {
         }
       }).subscribe(response => {
         console.log(response);
-      });
+      }, err => this._snackBar.open(err));
       this.dialogRef.close(response);
     });
   }

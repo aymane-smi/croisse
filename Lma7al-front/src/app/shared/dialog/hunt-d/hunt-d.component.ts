@@ -16,6 +16,7 @@ import { HuntingService } from 'src/app/services/hunting.service';
 import { FishService } from 'src/app/services/fish.service';
 import { Fish } from 'src/app/model/interfaces/fish';
 import { MatDividerModule } from '@angular/material/divider';
+import { MatSnackBar } from '@angular/material/snack-bar';
 
 @Component({
   selector: 'app-member-d',
@@ -29,7 +30,7 @@ export class HuntDComponent implements OnInit {
     private huntService: HuntingService,
     @Inject(MAT_DIALOG_DATA) public data: any,
     private fishService: FishService,
-  ) {}
+    private _snackBar: MatSnackBar) {}
 
   filteredOptions: Observable<string[]> | undefined;
   filteredOptionsMember!: Observable<Member[]>;
@@ -64,7 +65,7 @@ export class HuntDComponent implements OnInit {
   onSubmit(): void {
     this.huntService.addHunting(this.form.getRawValue()).subscribe(response => {
       this.dialogRef.close(response);
-    });
+    }, err => this._snackBar.open(err));
   }
 
   onNoClick(): void {
