@@ -11,5 +11,5 @@ export interface Ranking {
 
 export interface CompetitionMember {
     competitionCode: String,
-    memberNum?: Number
+    memberNum: Number
 }

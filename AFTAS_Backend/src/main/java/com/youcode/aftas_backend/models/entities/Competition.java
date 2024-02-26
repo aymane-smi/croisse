@@ -27,17 +27,21 @@ public class Competition {
     @NotEmpty(message = "Competition code is required.")
     @Size(min = 12, max = 12, message = "Competition code must be the first 3 char from the location follow by (-) and the date as dd-mm-yy")
     @Id
+    @Column(unique = true, nullable = false)
     private String code;
 
     @NotNull(message = "Competition date must not be null")
-    @Column(columnDefinition = "DATE DEFAULT CURRENT_DATE", unique = true)
+    @Temporal(value = TemporalType.DATE)
     private LocalDate date;
 
     @NotNull(message = "Competition start time must not be null")
+    @Temporal(value = TemporalType.TIMESTAMP)
     private LocalDateTime startTime;
 
     @NotNull(message = "Competition end time must not be null")
+    @Temporal(value = TemporalType.TIMESTAMP)
     private LocalDateTime endTime;
+
     private Integer numberOfParticipants;
 
     @NotEmpty(message = "Competition location is required")
@@ -46,9 +50,9 @@ public class Competition {
     @NotNull
     private Double amount;
 
-    @OneToMany(mappedBy = "competition", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "competition", cascade = CascadeType.ALL)
     private List<Ranking> rankings;
 
-    @OneToMany(fetch = FetchType.LAZY, mappedBy = "competition", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(fetch = FetchType.LAZY, mappedBy = "competition")
     private List<Hunting> huntings;
 }

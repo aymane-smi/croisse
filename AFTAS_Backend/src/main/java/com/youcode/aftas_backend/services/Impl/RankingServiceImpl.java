@@ -36,13 +36,10 @@ public class RankingServiceImpl implements RankingService {
     @Override
     public RankingDto save(RankingDto rankingDto) {
         var competition = competitionService.findByID(rankingDto.getId().getCompetitionCode());
-        if(competition.getDate().isEqual((LocalDate.now(ZoneId.of("Africa/Casablanca")))) ||
-                competition.getDate().isBefore(LocalDate.now(ZoneId.of("Africa/Casablanca")))
-        )
+        if(competition.getDate().isEqual((LocalDate.now(ZoneId.of("Africa/Casablanca")))) || competition.getDate().isBefore(LocalDate.now(ZoneId.of("Africa/Casablanca")))) 
             throw new RuntimeException("The competition is already closed.");
         if(competition.getNumberOfParticipants() <= rankingRepository.countByCompetitionCode(competition.getCode()))
             throw new RuntimeException("The cometition is full.");
-
         rankingDto.setCompetition(competition);
         rankingDto.setMember(memberService.findByID(rankingDto.getId().getMemberNum()));
         Ranking rankingEntity = modelMapper.map(rankingDto, Ranking.class);
@@ -70,9 +67,9 @@ public class RankingServiceImpl implements RankingService {
 
     public CompetitionMember deleteRanking(final String competitionCode, final Integer memberNum) {
         var rankingIdentifier = CompetitionMember.builder()
-                .competitionCode(competitionCode)
-                .memberNum(memberNum)
-                .build();
+                                                 .competitionCode(competitionCode)
+                                                 .memberNum(memberNum)
+                                                 .build();
         delete(rankingIdentifier);
         return rankingIdentifier;
     }
@@ -85,7 +82,7 @@ public class RankingServiceImpl implements RankingService {
     @Override
     public RankingDto findByID(CompetitionMember identifier) {
         Ranking foundedRanking = rankingRepository.findById(identifier)
-                .orElseThrow(() -> new ResourceNotFoundException("The ranking with credentials: " + identifier + " does not exist."));
+                    .orElseThrow(() -> new ResourceNotFoundException("The ranking with credentials: " + identifier + " does not exist."));
         return modelMapper.map(foundedRanking, RankingDto.class);
     }
 
@@ -97,30 +94,30 @@ public class RankingServiceImpl implements RankingService {
         List<Ranking> rankings = rankingRepository.findByCompetitionCode(competitionCode);
         if(rankings.isEmpty())
             throw new RuntimeException("There are no rankings in the given competition.");
-        if(rankings.get(0).getRank() != null)
+        if(rankings.get(0).getRank() != null) 
             throw new RuntimeException("The Competition rankings is already set-up.");
         rankings.forEach(
-                ranking -> {
-                    ranking.setScore(
-                            huntingService.findHuntByCompetitionAndMember(competitionCode, ranking.getMember().getNum())
-                                    .stream()
-                                    .mapToInt(hunt -> hunt.getNumberOfFish() * hunt.getFish().getLevel().getPoints() )
-                                    .sum()
-                    );
-                }
-        );
+                    ranking -> {
+                        ranking.setScore(
+                            huntingService.findHuntByCompetitionAndMember(competitionCode, ranking.getMember().getId())
+                            .stream()
+                            .mapToInt(hunt -> hunt.getNumberOfFish() * hunt.getFish().getLevel().getPoints() )
+                            .sum()
+                        );
+                    } 
+                );
         rankings.sort(Comparator.comparingInt(Ranking::getScore).reversed());
         int rank = 1;
         for(Ranking ranking :  rankings)
             ranking.setRank(rank++);
-
+        
         return Arrays.asList(
-                modelMapper.map(
-                        rankingRepository.saveAll(rankings),
-                        RankingDto[].class
-                )
+            modelMapper.map(
+                rankingRepository.saveAll(rankings),
+                RankingDto[].class
+            )
         );
     }
 
-
+    
 }

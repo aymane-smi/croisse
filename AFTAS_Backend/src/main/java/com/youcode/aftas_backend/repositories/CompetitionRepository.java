@@ -16,7 +16,4 @@ public interface CompetitionRepository extends JpaRepository<Competition, String
     public Page<Competition> findByDate(LocalDate date, Pageable pageable);
     public Page<Competition> findByDateBefore(LocalDate date, Pageable pageable);
     public Page<Competition> findByDateAfter(LocalDate date, Pageable pageable);
-    public int countCompetitionsByDateAfter(LocalDate date);
-    public int countCompetitionsByDateBefore(LocalDate date);
-    public int countCompetitionsByDate(LocalDate date);
 }

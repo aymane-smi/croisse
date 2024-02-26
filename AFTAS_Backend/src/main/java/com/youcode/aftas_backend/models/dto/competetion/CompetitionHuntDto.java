@@ -15,7 +15,7 @@ import lombok.Setter;
 @NoArgsConstructor
 
 public class CompetitionHuntDto {
-    private Integer id;
+
     private Integer numberOfFish;
     private FishDto fish;
     private MemberDto member;

@@ -1,163 +1,144 @@
-import { DatePipe } from '@angular/common';
-import { HttpClient } from '@angular/common/http';
-import { Component, Input } from '@angular/core';
-import { MatButton, MatButtonModule } from '@angular/material/button';
-import { MatDialog } from '@angular/material/dialog';
-import { MatTableModule } from '@angular/material/table';
-import { RouterModule } from '@angular/router';
-import { Observable } from 'rxjs';
-import { Competition } from 'src/app/model/interfaces/competition.model';
-import { CompetitionService } from 'src/app/services/competition.service';
+import {Component, OnInit} from '@angular/core';
+import {Observable} from "rxjs";
+import {Competition} from "../../model/interfaces/competition.model";
+import {Store} from "@ngrx/store";
+import {selectCompetitionState, selectCompetitions, selectCurrentPageState, selectPageSize, selectTotalPagesState} from "../../store/competition/competition.selectors";
+import * as competitionPageActions from "../../store/competition/actions/competition-page.actions";
+import { FormBuilder, FormGroup, Validators } from '@angular/forms';
+import { CompetitionPage } from 'src/app/model/interfaces/CompetitionPage';
 
 @Component({
-  selector: 'app-competitions-com',
+  selector: 'app-competitions',
   templateUrl: './competitions.component.html',
-  styleUrls: ['./competitions.component.css'],
-  standalone: true,
-  imports: [RouterModule, MatTableModule, DatePipe, MatButtonModule]
 })
-export class CompetitionsComponent {
-  columns: String[] = ['Code', 'date', 'start', 'end', 'number', 'amount'];
-  @Input() competitionType:String = '';
-  CompetitionSize:number = 0;
-  competitions:Competition[] = [];
-  page:number = 0;
-  Previous: boolean = false;
-  Next: boolean = false;
-  constructor(private competitionService:CompetitionService, public dialog: MatDialog){}
+export class CompetitionsComponent implements OnInit{
+  competitions: Observable<Competition[]>;
+  currentPage: number | undefined | Number;
+  totalPages: number | undefined | Number;
+  pageSize: Observable<undefined | Number>;
+  competitionForm: FormGroup;
+  selectedCompetitions?: Number = 0;
 
-  ngOnInit(){
-    if(this.competitionType === "ALL"){
-      this.competitionService.getCompetitionNumber().subscribe(
-      response => {
-        console.log(response);
-        this.CompetitionSize = response.number;
-        this.competitionService.getCompetitions(0, 10).subscribe((response)=>{
-          this.competitions = response;
-        });
-        if(Math.floor(this.CompetitionSize/10) == 0){
-          this.Previous = true;
-          this.Next = true;
-        }else{
-          this.Previous = true;
-        }
-      }
+  constructor(private store: Store, private fb: FormBuilder) {
+    this.competitions = store.select(selectCompetitions);
+    store.select(selectCurrentPageState).subscribe((page) => (this.currentPage = page));
+    store.select(selectTotalPagesState).subscribe((total) => (this.totalPages = total));
+    this.pageSize = store.select(selectPageSize);
+    this.competitionForm = fb.group({
+      date: [Date.now(), Validators.required],
+      startTime: ['', Validators.required],
+      endTime: ['', Validators.required],
+      location: ['', Validators.required],
+      numberOfParticipants: [2, Validators.min(2)],
+      amount: [10, Validators.required],
+    })
+  }
+
+  selectCompetitionType(type: number) {
+    this.selectedCompetitions = type;
+  }
+
+  getAllCompetitions() {
+    this.selectCompetitionType(0);
+    this.store.dispatch(competitionPageActions.enter({page: 0, size: 10} ))
+  }
+
+  getFutureCompetitions() {
+    this.selectCompetitionType(1);
+    this.selectedCompetitions = 1;
+    this.store.dispatch(competitionPageActions.LoadFutureCompetitions({page: 0, size: 5}))
+  }
+
+  getClosedCompetitions() {
+    this.selectCompetitionType(2);
+    this.selectedCompetitions = 2;
+    this.store.dispatch(competitionPageActions.LoadClosedCompetitions({page: 0, size: 5}))
+  }
+
+  getOnGoingCompetitions() {
+    this.selectCompetitionType(3);
+    this.selectedCompetitions = 3;
+    this.store.dispatch(competitionPageActions.LoadCurrentCompetition({page: 0, size: 5}))
+  }
+
+  handleNext() {
+    const currentPageValue = Number(this.currentPage?.valueOf()) || 0;
+
+    if (this.selectedCompetitions == 0 && currentPageValue + 1 < (this.totalPages! as number)) {
+      this.store.dispatch(
+        competitionPageActions.enter({ page: ((this.currentPage?.valueOf() ?? 0) + 1) as number, size: 10 })
       );
-    }else if(this.competitionType === "GOING"){
-      this.competitionService.getGoingCompetitionNumber().subscribe(
-        response => {
-          this.CompetitionSize = response.number;
-          this.competitionService.getCurrentCompetitions(0, 10).subscribe((response)=>{
-            this.competitions = response;
-          });
-          if(Math.floor(this.CompetitionSize/10) == 0){
-            this.Previous = true;
-            this.Next = true;
-          }else{
-            this.Previous = true;
-          }
-        }
+    } else if (this.selectedCompetitions == 1 && currentPageValue + 1 < (this.totalPages! as number)) {
+      this.store.dispatch(
+        competitionPageActions.LoadFutureCompetitions({
+          page: (this.currentPage?.valueOf() ?? 0) + 1,
+          size: 5,
+        })
       );
-    }else if(this.competitionType === "AFTER"){
-      this.competitionService.getAfterCompetitionNumber().subscribe(
-      response => {
-        this.CompetitionSize = response.number;
-        this.competitionService.getFutureCompetitions(0, 10).subscribe((response)=>{
-          this.competitions = response;
-        });
-        if(Math.floor(this.CompetitionSize/10) == 0){
-          this.Previous = true;
-          this.Next = true;
-        }else{
-          this.Previous = true;
-        }
-      }
+    } else if (this.selectedCompetitions == 2 && currentPageValue + 1 < (this.totalPages! as number)) {
+      this.store.dispatch(
+        competitionPageActions.LoadClosedCompetitions({
+          page: (this.currentPage?.valueOf() ?? 0) + 1,
+          size: 5,
+        })
       );
-    }else if(this.competitionType === "BEFORE"){
-      this.competitionService.getBeforeCompetitionNumber().subscribe(
-      response => {
-        this.CompetitionSize = response.number;
-        this.competitionService.getClosedCompetitions(0, 10).subscribe((response)=>{
-          this.competitions = response;
-        });
-        if(Math.floor(this.CompetitionSize/10) == 0){
-          this.Previous = true;
-          this.Next = true;
-        }else{
-          this.Previous = true;
-        }
-      }
+    } else if (this.selectedCompetitions == 3 && currentPageValue + 1 < (this.totalPages! as number)) {
+      this.store.dispatch(
+        competitionPageActions.LoadCurrentCompetition({
+          page: (this.currentPage?.valueOf() ?? 0) + 1,
+          size: 5,
+        })
       );
     }
   }
 
-  handlePrevious(){
-    console.log("previous:", this.page, "size:", this.CompetitionSize);
-    if(this.page >= 1){
-      this.page--;
-      if(this.competitionType === "ALL")
-        this.competitionService.getCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-          this.competitions = response;
-        });
-      else if(this.competitionType === "AFTER")
-        this.competitionService.getFutureCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-          this.competitions = response;
-        });
-      else if(this.competitionType === "BEFORE")
-        this.competitionService.getClosedCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-          this.competitions = response;
-        });
-      else if(this.competitionType === "GOING")
-      this.competitionService.getCurrentCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-        this.competitions = response;
-      });
-      this.Next = false;
-    }else if(this.page == 0){
-      if(this.competitionType === "ALL")
-        this.competitionService.getCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-          this.competitions = response;
-        });
-      else if(this.competitionType === "AFTER")
-        this.competitionService.getFutureCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-          this.competitions = response;
-        });
-      else if(this.competitionType === "BEFORE")
-        this.competitionService.getClosedCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-          this.competitions = response;
-        });
-      else if(this.competitionType === "GOING")
-      this.competitionService.getCurrentCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-        this.competitions = response;
-      });
-      this.Previous = true;
-      this.Next = false;
+  handlePrevious() {
+    const currentPageValue = this.currentPage?.valueOf() ?? 0;
+
+    if (this.selectedCompetitions == 0 && currentPageValue > 0) {
+      this.store.dispatch(
+        competitionPageActions.enter({ page: currentPageValue - 1, size: 10 })
+      );
+    } else if (this.selectedCompetitions == 1 && currentPageValue > 0) {
+      this.store.dispatch(
+        competitionPageActions.LoadFutureCompetitions({
+          page: currentPageValue - 1,
+          size: 5,
+        })
+      );
+    } else if (this.selectedCompetitions == 2 && currentPageValue > 0) {
+      this.store.dispatch(
+        competitionPageActions.LoadClosedCompetitions({
+          page: currentPageValue - 1,
+          size: 5,
+        })
+      );
+    } else if (this.selectedCompetitions == 3 && currentPageValue > 0) {
+      this.store.dispatch(
+        competitionPageActions.LoadCurrentCompetition({
+          page: currentPageValue - 1,
+          size: 5,
+        })
+      );
     }
   }
 
-  handleNext(){
-    console.log("next:", this.page, "size:", this.CompetitionSize);
-    if((this.page+1)*1 < this.CompetitionSize){
-      this.page++;
-      if(this.competitionType === "ALL")
-        this.competitionService.getCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-          this.competitions = response;
-        });
-      else if(this.competitionType === "AFTER")
-        this.competitionService.getFutureCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-          this.competitions = response;
-        });
-      else if(this.competitionType === "BEFORE")
-        this.competitionService.getClosedCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-          this.competitions = response;
-        });
-      else if(this.competitionType === "GOING")
-      this.competitionService.getCurrentCompetitions(this.page, 10).subscribe((response: Competition[]) => {
-        this.competitions = response;
-      });
-      this.Previous = false;
-    }else{
-      this.Next = true;
-    }
+  ngOnInit() {
+    this.store.dispatch(competitionPageActions.enter({page: 0, size: 10} ))
+  }
+
+  addCompetition() {
+    const competition: Competition = this.competitionForm.value as Competition;
+
+    const dateObject = new Date(competition!.date!.toString());
+
+    const day = ('0' + dateObject.getDate()).slice(-2);
+    const month = ('0' + (dateObject.getMonth() + 1)).slice(-2);
+    const year = dateObject.getFullYear().toString().slice(-2);
+    competition.code = (competition.location?.replace(/\s/g, '').substring(0, 3)) + "-" + `${day}-${month}-${year}`;
+    competition.endTime = new Date(competition.date + "T" + (competition.endTime?.toString() || "") + ":00");
+    competition.startTime = new Date(competition.date + "T" + (competition.startTime?.toString() || "") + ":00");
+    this.store.dispatch(competitionPageActions.addCompetition({ competition }));
   }
 
 }

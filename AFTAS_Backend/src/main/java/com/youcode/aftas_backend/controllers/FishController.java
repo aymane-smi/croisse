@@ -4,10 +4,11 @@ import com.youcode.aftas_backend.models.dto.fish.FishDto;
 import com.youcode.aftas_backend.models.dto.fish.FishDtoResponse;
 import com.youcode.aftas_backend.services.FishService;
 import jakarta.validation.Valid;
-import org.springframework.beans.factory.annotation.Autowired;
+import lombok.AllArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.*;
 
@@ -18,12 +19,13 @@ import java.util.Map;
 @RestController
 @RequestMapping(path = "api/fishes", produces = MediaType.APPLICATION_JSON_VALUE)
 @Validated
+@AllArgsConstructor
 public class FishController {
 
-    @Autowired
-    private FishService fishService;
+    private final FishService fishService;
 
     @PostMapping
+    @PreAuthorize("hasAnyAuthority('JURY', 'MANAGER')")
     public ResponseEntity<FishDto> createFish(@Valid @RequestBody FishDto fishDto) {
         FishDto createdFish = fishService.save(fishDto);
         return ResponseEntity.status(HttpStatus.CREATED).body(createdFish);
@@ -48,6 +50,7 @@ public class FishController {
     }
 
     @DeleteMapping("/{name}")
+    @PreAuthorize("hasAnyAuthority('JURY', 'MANAGER')")
     public ResponseEntity<Map<String, String>> deleteFish(@PathVariable String name) {
         fishService.delete(name);
         Map<String, String> response = new HashMap<>();

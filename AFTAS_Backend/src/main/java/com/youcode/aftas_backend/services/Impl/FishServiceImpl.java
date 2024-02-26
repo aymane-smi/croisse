@@ -8,22 +8,20 @@ import com.youcode.aftas_backend.models.entities.Level;
 import com.youcode.aftas_backend.repositories.FishRepository;
 import com.youcode.aftas_backend.repositories.LevelRepository;
 import com.youcode.aftas_backend.services.FishService;
+import lombok.AllArgsConstructor;
 import org.modelmapper.ModelMapper;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
 
 @Service
+@AllArgsConstructor
 public class FishServiceImpl implements FishService {
 
-    @Autowired
     private ModelMapper modelMapper;
 
-    @Autowired
     private FishRepository fishRepository;
 
-    @Autowired
     private LevelRepository levelRepository;
 
     @Override
